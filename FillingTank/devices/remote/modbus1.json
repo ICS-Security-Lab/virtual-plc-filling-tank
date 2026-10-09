@@ -1,0 +1,94 @@
+{
+  "name": "modbus1",
+  "protocol": "modbus-tcp",
+  "modbusTcpConfig": {
+    "host": "192.168.56.1",
+    "port": 502,
+    "timeout": 1000,
+    "slaveId": 1,
+    "ioGroups": [
+      {
+        "id": "5476c3fa-6de7-481e-b05d-13c92d0571aa",
+        "name": "Buttons",
+        "functionCode": "2",
+        "cycleTime": 100,
+        "offset": "0",
+        "length": 2,
+        "errorHandling": "keep-last-value",
+        "ioPoints": [
+          {
+            "id": "Buttons_0",
+            "name": "Buttons_0",
+            "type": "Digital Input (Discrete Input)",
+            "iecLocation": "%IX0.0",
+            "alias": ""
+          },
+          {
+            "id": "Buttons_1",
+            "name": "Buttons_1",
+            "type": "Digital Input (Discrete Input)",
+            "iecLocation": "%IX0.1",
+            "alias": ""
+          }
+        ]
+      },
+      {
+        "id": "054804d2-3eae-4d89-abb2-874ba5d7df87",
+        "name": "Valves",
+        "functionCode": "15",
+        "cycleTime": 100,
+        "offset": "0",
+        "length": 4,
+        "errorHandling": "keep-last-value",
+        "ioPoints": [
+          {
+            "id": "Valves_0",
+            "name": "Valves_0",
+            "type": "Digital Output (Multiple Coils)",
+            "iecLocation": "%QX0.0",
+            "alias": ""
+          },
+          {
+            "id": "Valves_1",
+            "name": "Valves_1",
+            "type": "Digital Output (Multiple Coils)",
+            "iecLocation": "%QX0.1",
+            "alias": ""
+          },
+          {
+            "id": "Valves_2",
+            "name": "Valves_2",
+            "type": "Digital Output (Multiple Coils)",
+            "iecLocation": "%QX0.2",
+            "alias": ""
+          },
+          {
+            "id": "Valves_3",
+            "name": "Valves_3",
+            "type": "Digital Output (Multiple Coils)",
+            "iecLocation": "%QX0.3",
+            "alias": ""
+          }
+        ]
+      },
+      {
+        "id": "c6aafbe3-7610-4381-bce8-2959b231dbe0",
+        "name": "Display",
+        "functionCode": "16",
+        "cycleTime": 100,
+        "offset": "0",
+        "length": 1,
+        "errorHandling": "keep-last-value",
+        "ioPoints": [
+          {
+            "id": "Display_0",
+            "name": "Display_0",
+            "type": "Analog Output (Multiple Registers)",
+            "iecLocation": "%QW0",
+            "alias": ""
+          }
+        ]
+      }
+    ]
+  }
+}

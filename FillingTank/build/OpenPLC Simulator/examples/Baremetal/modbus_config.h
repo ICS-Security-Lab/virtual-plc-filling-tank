@@ -1,0 +1,100 @@
+/*
+modbus_config.h - Build configuration for the OpenPLC Modbus slave
+Copyright (C) 2022 OpenPLC - Thiago Alves
+
+The single place every Modbus translation unit picks up its build gates from.
+It pulls in the generated defines.h (MODBUS_ENABLED / MBSERIAL / DEBUGGER_ENABLED
+/ MBTCP / MBSERIAL_ON_SECONDARY / ...) and derives the composite gates on top of
+it. Because the modularized TUs are gated (e.g. modbus_registers.cpp is wrapped
+in #ifdef MODBUS_ENABLED), EACH of them must see these macros — so every modbus_*
+header includes this one (via modbus_types.h). defines.h has no include guard, so
+it must reach a TU through exactly one path: this header.
+*/
+
+#ifndef MODBUS_CONFIG_H
+#define MODBUS_CONFIG_H
+
+#include <Arduino.h>
+#include "defines.h"
+
+// Serial transport is active when full Modbus RTU (MBSERIAL) is enabled OR the
+// always-on debugger (DEBUGGER_ENABLED) needs the serial port without the rest
+// of Modbus. This gate guards the serial RX/framing code so the debugger works
+// over serial even when no Modbus operation buffers (coils/holding/etc.) are
+// allocated.
+#if defined(MBSERIAL) || defined(DEBUGGER_ENABLED)
+    #define MB_SERIAL_ACTIVE
+#endif
+
+// The same rule for the network. TCP transport is active when Modbus TCP is
+// served (MBTCP) OR the always-on debugger needs the link because that is the
+// only way in (OPLC_NET_ENABLED + DEBUGGER_ENABLED).
+//
+// Without this the debugger's reachability was a side effect of someone having
+// added a Modbus server: on a board with no accessible UART -- the LOGO! -- a
+// project that served no Modbus produced firmware with nothing listening, so
+// the editor could neither debug it nor upload to it again. The debugger is not
+// Modbus, and it should not need Modbus's permission to answer.
+#if defined(MBTCP) || (defined(OPLC_NET_ENABLED) && defined(DEBUGGER_ENABLED))
+    #define MB_TCP_ACTIVE
+#endif
+
+// Default serial config for the always-on debugger. `defines.h` normally emits
+// DEBUG_IFACE / DEBUG_BAUD / DEBUG_SLAVE explicitly (from the Serial and Modbus
+// RTU screens); these `#ifndef` defaults cover anything it left unset — they are
+// a fallback for a hand-written defines.h, NOT the expected path. When they do
+// apply, they must agree with what the editor dials, so they mirror
+// `generate-defines.ts` (Serial @ 115200, slave id 1).
+// Defined whenever the debugger is on —
+// including alongside full Modbus RTU, since the dual-serial path (RTU on a
+// secondary UART, MBSERIAL_ON_SECONDARY) needs DEBUG_SLAVE for the default port.
+#ifdef DEBUGGER_ENABLED
+    #ifndef DEBUG_IFACE
+        #define DEBUG_IFACE Serial
+    #endif
+    #ifndef DEBUG_BAUD
+        #define DEBUG_BAUD 115200
+    #endif
+    #ifndef DEBUG_SLAVE
+        #define DEBUG_SLAVE 1
+    #endif
+    // The editor's link answers on its own id IN ADDITION to whatever the Modbus
+    // server is set to, routed by function code, so the user's slave id is free
+    // on every port. Undefined without the debugger: there is no editor link to
+    // keep reachable and the server owns the port alone.
+    #define MB_EDITOR_SLAVE DEBUG_SLAVE
+#endif
+
+// ---------------------------------------------------------------------------
+// Ethernet route: which stack carries it.
+//
+// `BOARD_*` names the board's WIFI API -- that is the axis it was introduced
+// for, and it is why the Arduino Uno R4 WiFi and the Nano ESP32 both declare
+// BOARD_PORTENTA: neither is a Portenta, but both reach WiFi through the same
+// call shape. The Ethernet route is a SEPARATE axis and was being read off the
+// same define, so a board whose WiFi happens to look like a Portenta's was also
+// told its Ethernet is a Portenta's -- an mbed lwIP MAC rather than the SPI
+// module it actually takes.
+//
+// So the two are split. MBETH_* says what carries Ethernet and nothing about
+// WiFi; a VPP states it with `-DMBETH_SPI` in its HAL flags when the default
+// below would guess wrong for that board.
+//
+// This is the CHEAP half of the fix: the WiFi axis keeps using BOARD_*, and
+// `WiFi.config()`'s argument order is still chosen by it -- which is still
+// wrong for WiFiS3 and the esp32 core (both differ from mbed's). That needs a
+// board on the bench to verify against and is deliberately not attempted here.
+// ---------------------------------------------------------------------------
+#if defined(MBTCP_ETHERNET) && !defined(MBETH_SPI) && !defined(MBETH_MBED_LWIP)
+#  if defined(BOARD_LOGO8) || defined(BOARD_ESP32)
+     // On-chip MAC. Named branches own these; neither MBETH_* applies.
+#  elif defined(BOARD_PORTENTA)
+     // Default preserved: a real Portenta / Giga / Portenta Machine Control has
+     // an mbed lwIP MAC. A board that only borrows the WiFi shape overrides it.
+#    define MBETH_MBED_LWIP
+#  else
+#    define MBETH_SPI
+#  endif
+#endif
+
+#endif

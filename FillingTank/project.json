@@ -1,0 +1,52 @@
+{
+  "meta": {
+    "name": "Tank_Filling",
+    "type": "plc-project"
+  },
+  "data": {
+    "dataTypes": [],
+    "globalVariableLists": [],
+    "pous": [],
+    "configuration": {
+      "resource": {
+        "tasks": [
+          {
+            "name": "task0",
+            "triggering": "Cyclic",
+            "interval": "T#100ms",
+            "priority": 1
+          }
+        ],
+        "instances": [
+          {
+            "name": "instance0",
+            "task": "task0",
+            "program": "main"
+          }
+        ],
+        "globalVariables": []
+      }
+    },
+    "libraries": [],
+    "debugVariables": {
+      "pous": {
+        "main": [
+          "Fill_Btn",
+          "Disch_Btn",
+          "Fill_Valve",
+          "Disch_Valve",
+          "T_Fill",
+          "T_Disch",
+          "Fill_Seq",
+          "Disch_Seq",
+          "Fill_Light",
+          "Timer_Disp",
+          "Disch_Light",
+          "Fill_sec",
+          "Left_Calc",
+          "Disch_sec"
+        ]
+      }
+    }
+  }
+}
