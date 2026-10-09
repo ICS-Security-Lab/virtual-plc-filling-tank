@@ -263,29 +263,3 @@ While the tank is filling you should see the fill valve and lamp TRUE, the count
 | Hard-coding the preset in two places | Change `T#10s` and the countdown is still wrong | Use one constant for the duration |
 | Forgetting the display is an integer register | Display never updates or looks off by one | Convert explicitly (`TO_INT`) before writing to `%QW0` |
 | Something else already using port 502 | The slave plugin fails to bind | Check what is listening on 502 before starting |
-
----
-
-## Repository layout
-
-```text
-.
-├── README.md
-├── docs/
-│   ├── io-mapping.md          # signal table, FC codes, PLC addresses
-│   └── images/                # screenshots used in this README
-├── plc/
-│   └── Tank_Filling/          # OpenPLC Editor project (program `main`)
-│       └── main.ld            # 14 rungs of ladder logic
-└── scripts/
-    └── verify_modbus.py       # reads coils + holding register from the runtime
-```
-
----
-
-## What I'd add next
-
-- An **emergency stop** that forces both valves closed regardless of phase
-- **Edge detection** on the buttons so each phase is strictly one-shot
-- A **level sensor** variant, to compare timer-based control against feedback control
-- A small **HMI** reading the same Modbus server used for verification
